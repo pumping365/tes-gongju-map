@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>공주시 개발계획 & 매물 인터랙티브 지도 - 테스 공인중개사사무소 (최종판)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f2f5;
+    }
+    #container {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+    }
+    #map {
+      flex: 2;
+    }
+    #sidebar {
+      flex: 1;
+      max-width: 520px;
+      background: #f7f7f9;
+      border-left: 1px solid #ddd;
+      padding: 14px 18px 12px 18px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    .brand-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .brand-logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: #dde3ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid #c5cff9;
+    }
+    .brand-logo span {
+      font-size: 18px;
+      font-weight: 700;
+      color: #2f3a8f;
+    }
+    .brand-text h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+    .brand-text small {
+      font-size: 12px;
+      color: #666;
+    }
+    .hint {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+    .layers-box {
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: #ffffff;
+      border-radius: 10px;
+      border: 1px solid #e0e0e5;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.02);
+      font-size: 13px;
+    }
+    .layers-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .layers-box h2 {
+      font-size: 14px;
+      margin: 0;
+    }
+    .layers-actions {
+      font-size: 11px;
+      color: #3558ff;
+      cursor: pointer;
+      user-select: none;
+    }
+    .layers-actions span {
+      margin-left: 8px;
+      text-decoration: underline;
+    }
+    .layer-group-title {
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 4px;
+      margin-bottom: 2px;
+      color: #555;
+    }
+    .layer-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+      gap: 6px;
+    }
+    .layer-item input[type="checkbox"] {
+      accent-color: #3558ff;
+    }
+    .layer-label-main {
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .layer-label-sub {
+      font-size: 11px;
+      color: #777;
+    }
+    .project-list {
+      margin-top: 10px;
+    }
+    .project-list-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #555;
+    }
+    .project-btn {
+      width: 100%;
+      text-align: left;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.15s, box-shadow 0.15s, border-color 0.15s;
+    }
+    .project-btn strong {
+      display: block;
+      margin-bottom: 2px;
+    }
+    .project-btn span {
+      font-size: 11px;
+      color: #666;
+    }
+    .project-btn:hover {
+      background: #f0f4ff;
+      border-color: #4a67ff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .project-btn.active {
+      background: #e3ebff;
+      border-color: #3558ff;
+      box-shadow: 0 0 0 1px rgba(53,88,255,0.5);
+    }
+    #details {
+      margin-top: 8px;
+      padding: 10px 12px 6px 12px;
+      background: #ffffff;
+      border-radius: 10px;
+      border: 1px solid #e0e0e5;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+      flex: 1;
+      overflow-y: auto;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    #details h2 {
+      font-size: 15px;
+      margin-top: 0;
+      margin-bottom: 6px;
+    }
+    #details h3 {
+      font-size: 13px;
+      margin: 8px 0 4px 0;
+    }
+    #details ul {
+      padding-left: 18px;
+      margin: 4px 0 8px 0;
+    }
+    #details li {
+      margin-bottom: 2px;
+    }
+    .contact-box {
+      margin-top: 8px;
+      padding: 8px 10px;
+      background: #ffffff;
+      border-radius: 10px;
+      border: 1px solid #e0e0e5;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.03);
+      display: flex;
+      gap: 8px;
+      font-size: 12px;
+    }
+    .contact-info {
+      flex: 1;
+    }
+    .contact-info h2 {
+      font-size: 13px;
+      margin: 0 0 4px 0;
+    }
+    .contact-info p {
+      margin: 2px 0;
+    }
+    .qr-box {
+      width: 80px;
+      min-width: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 11px;
+      color: #555;
+    }
+    .qr-box img {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: #fafafa;
+    }
+    @media (max-width: 960px) {
+      #container {
+        flex-direction: column;
+      }
+      #map {
+        height: 45vh;
+        flex: 0 0 auto;
+      }
+      #sidebar {
+        height: 55vh;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="map"></div>
+    <aside id="sidebar">
+      <div class="brand-header">
+        <div class="brand-logo">
+          <span>TES</span>
+        </div>
+        <div class="brand-text">
+          <h1>테스 공인중개사사무소</h1>
+          <small>토지 · 전원주택 · 개발컨설팅 · 공주시 계룡면</small>
+        </div>
+      </div>
+      <div class="hint">
+        왼쪽 지도 / 아래 버튼을 클릭하면 개발계획·매물 위치와 설명이 표시됩니다. (상담용 화면)
+      </div>
+
+      <div class="layers-box">
+        <div class="layers-header">
+          <h2>레이어 관리 (개발계획 + 매물)</h2>
+          <div class="layers-actions">
+            <span id="layers-all-on">전체 켜기</span>
+            <span id="layers-all-off">전체 끄기</span>
+          </div>
+        </div>
+
+        <div class="layer-group-title">[개발계획]</div>
+        <div class="layer-item">
+          <input type="checkbox" data-type="newtown" checked />
+          <div>
+            <div class="layer-label-main">신도시·대규모 주거 개발</div>
+            <div class="layer-label-sub">송선·동현지구 도시개발사업</div>
+          </div>
+        </div>
+        <div class="layer-item">
+          <input type="checkbox" data-type="ic_hub" checked />
+          <div>
+            <div class="layer-label-main">IC 인접·광역교통 거점 개발</div>
+            <div class="layer-label-sub">금흥지구 도시개발사업 (공주IC 인근)</div>
+          </div>
+        </div>
+        <div class="layer-item">
+          <input type="checkbox" data-type="soc" checked />
+          <div>
+            <div class="layer-label-main">생활SOC·공공복합시설</div>
+            <div class="layer-label-sub">신관동 복합커뮤니티센터</div>
+          </div>
+        </div>
+        <div class="layer-item">
+          <input type="checkbox" data-type="rural_tour" checked />
+          <div>
+            <div class="layer-label-main">전원·귀촌·관광 개발축</div>
+            <div class="layer-label-sub">계룡면 종합개발계획</div>
+          </div>
+        </div>
+        <div class="layer-item">
+          <input type="checkbox" data-type="vision" checked />
+          <div>
+            <div class="layer-label-main">도시 상위 비전·기본계획</div>
+            <div class="layer-label-sub">공주시 2030·2040 도시·비전계획</div>
+          </div>
+        </div>
+
+        <div class="layer-group-title" style="margin-top:6px;">[매물 레이어 (예시)]</div>
+        <div class="layer-item">
+          <input type="checkbox" data-type="listing_field" checked />
+          <div>
+            <div class="layer-label-main">전(밭) 매물</div>
+            <div class="layer-label-sub">전원주택 예정지, 영농형 등</div>
+          </div>
+        </div>
+        <div class="layer-item">
+          <input type="checkbox" data-type="listing_rice" checked />
+          <div>
+            <div class="layer-label-main">답(논) 매물</div>
+            <div class="layer-label-sub">농업·겸용 전원주택 후보지 등</div>
+          </div>
+        </div>
+        <div class="layer-item">
+          <input type="checkbox" data-type="listing_forest" checked />
+          <div>
+            <div class="layer-label-main">임야 매물</div>
+            <div class="layer-label-sub">산림·힐링형, 장기투자형</div>
+          </div>
+        </div>
+        <div class="layer-item">
+          <input type="checkbox" data-type="listing_countryhouse" checked />
+          <div>
+            <div class="layer-label-main">전원주택·주거형 매물</div>
+            <div class="layer-label-sub">단독·전원주택, 세컨하우스용</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-list">
+        <div class="project-list-title">[주요 개발계획 바로가기]</div>
+        <button class="project-btn" data-id="songseon_donghyeon">
+          <strong>송선·동현지구 도시개발사업</strong>
+          <span>세종 인접 신도시급 개발 (주거 중심)</span>
+        </button>
+        <button class="project-btn" data-id="geumheung">
+          <strong>금흥지구 도시개발사업</strong>
+          <span>공주IC 인접 신흥 주거·생활 거점</span>
+        </button>
+        <button class="project-btn" data-id="sin_gwan_center">
+          <strong>신관동 복합커뮤니티센터</strong>
+          <span>청소년·문화·체육·학습 복합 생활SOC</span>
+        </button>
+        <button class="project-btn" data-id="gyeryong">
+          <strong>계룡면 종합개발계획</strong>
+          <span>관광·힐링·전원주택·귀촌 특화 권역</span>
+        </button>
+        <button class="project-btn" data-id="city_vision">
+          <strong>공주시 2030·2040 도시·비전계획</strong>
+          <span>도시 전체 중장기 발전 방향</span>
+        </button>
+      </div>
+
+      <div id="details">
+        <h2>상담용 인터랙티브 지도 안내</h2>
+        <p>위 레이어에서 <b>개발계획</b>과 <b>매물 유형</b>을 선택하고, 왼쪽 지도 마커 또는 아래 버튼을 클릭하면<br>
+        해당 위치와 상세 설명이 이 영역에 표시됩니다.</p>
+        <p>실제 사용 시에는 아래 예시 매물 정보를 실제 물건 정보로 교체하시면 됩니다.</p>
+      </div>
+
+      <div class="contact-box">
+        <div class="contact-info">
+          <h2>테스 공인중개사사무소</h2>
+          <p>대표: 박동수 공인중개사</p>
+          <p>주소: 충남 공주시 계룡면</p>
+          <p>전화: 010-2232-3354 <!-- 실제 번호로 수정 --></p>
+          <p>카카오톡 채널: @테스공인중개사 <!-- 실제 채널명으로 수정 --></p>
+        </div>
+        <div class="qr-box">
+          <img src="kakao_qr.png" alt="카카오톡 채널 QR">
+          <span>카카오 상담<br/>QR 코드</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script>
+    const GONGJU_CENTER = [36.4556, 127.125];
+    const map = L.map('map').setView(GONGJU_CENTER, 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap 기여자'
+    }).addTo(map);
+
+    const items = {
+      songseon_donghyeon: {
+        id: 'songseon_donghyeon',
+        category: 'plan',
+        type: 'newtown',
+        name: '송선·동현지구 도시개발사업',
+        coords: [36.474, 127.135],
+        zoom: 14,
+        popup: '송선·동현지구 도시개발사업',
+        html: `
+          <h2>송선·동현지구 도시개발사업</h2>
+          <h3>1. 기본 개요</h3>
+          <ul>
+            <li><b>유형</b>: 신도시·대규모 주거 개발 (세종 생활권)</li>
+            <li><b>위치</b>: 공주시 송선동·동현동 일원</li>
+            <li><b>성격</b>: 세종시와 약 8km 거리의 신도시급 도시개발사업</li>
+            <li><b>규모</b>: 약 93.9만㎡, 약 16,799명 / 7,241세대 계획</li>
+            <li><b>기간</b>: 2021년 ~ 2027년(계획)</li>
+          </ul>
+          <h3>2. 의미</h3>
+          <ul>
+            <li>세종시에 집중된 주택 수요를 분산하는 역할</li>
+            <li>공주시의 자족적 주거 기능을 강화하는 핵심 신도시</li>
+            <li>세종-공주 광역 주거·생활권의 중심 축으로 성장 예상</li>
+          </ul>
+          <h3>3. 상담 포인트</h3>
+          <ul>
+            <li>세종 출퇴근 수요 + 상대적으로 합리적인 토지·주거 가격</li>
+            <li>인접 지역 토지(전·답·임야, 배후 전원주택지)의 중장기 가치 설명에 유리</li>
+          </ul>
+        `
+      },
+      geumheung: {
+        id: 'geumheung',
+        category: 'plan',
+        type: 'ic_hub',
+        name: '금흥지구 도시개발사업',
+        coords: [36.48329, 127.14593],
+        zoom: 14,
+        popup: '금흥지구 도시개발사업',
+        html: `
+          <h2>금흥지구 도시개발사업</h2>
+          <h3>1. 기본 개요</h3>
+          <ul>
+            <li><b>유형</b>: IC 인접·광역교통 거점 개발</li>
+            <li><b>위치</b>: 공주시 금흥동 일원 (공주IC 인근)</li>
+            <li><b>내용</b>: 도시개발구역 지정, 개발계획 수립 및 변경, 실시계획 인가 진행</li>
+            <li><b>성격</b>: 주거·근린생활·기반시설이 포함된 도시개발지</li>
+          </ul>
+          <h3>2. 의미</h3>
+          <ul>
+            <li>고속도로 IC 인접 입지로 광역 교통 접근성이 뛰어남</li>
+            <li>신규 주거수요 + 상권 형성이 기대되는 신흥 주거·생활 거점</li>
+          </ul>
+          <h3>3. 상담 포인트</h3>
+          <ul>
+            <li>IC 인근 토지·주택 수요(통근, 물류, 상권)를 함께 설명</li>
+            <li>향후 배후 수요를 고려한 근린상가, 전원주택지, 투자용 토지 상담에 활용</li>
+          </ul>
+        `
+      },
+      sin_gwan_center: {
+        id: 'sin_gwan_center',
+        category: 'plan',
+        type: 'soc',
+        name: '신관동 복합커뮤니티센터',
+        coords: [36.4635, 127.119],
+        zoom: 15,
+        popup: '신관동 복합커뮤니티센터',
+        html: `
+          <h2>신관동 복합커뮤니티센터</h2>
+          <h3>1. 기본 개요</h3>
+          <ul>
+            <li><b>유형</b>: 생활SOC·공공복합시설</li>
+            <li><b>위치</b>: 공주시 신관동 옛 KBS 공주사업소 부지 일원</li>
+            <li><b>규모</b>: 지하 1층 ~ 지상 5층(계획), 통합 공공복합시설</li>
+            <li><b>주요시설</b>: 청소년수련관, 진로교육센터, 생활문화센터, 국민체육센터, 작은도서관, 평생학습관 등</li>
+          </ul>
+          <h3>2. 의미</h3>
+          <ul>
+            <li>신관동·신시가지 일대 생활 SOC(생활 인프라) 수준 대폭 향상</li>
+            <li>인근 주거지의 생활 편의와 이미지 개선 → 주거 선호도 상승</li>
+          </ul>
+          <h3>3. 상담 포인트</h3>
+          <ul>
+            <li>“생활 인프라가 좋은 동네”를 찾는 실거주 수요에 강조</li>
+            <li>신규·기존 아파트, 다가구, 상가의 수요 기반 설명에 활용</li>
+          </ul>
+        `
+      },
+      gyeryong: {
+        id: 'gyeryong',
+        category: 'plan',
+        type: 'rural_tour',
+        name: '계룡면 종합개발계획',
+        coords: [36.3694, 127.1539],
+        zoom: 12,
+        popup: '계룡면 종합개발계획',
+        html: `
+          <h2>계룡면 종합개발계획</h2>
+          <h3>1. 기본 개요</h3>
+          <ul>
+            <li><b>유형</b>: 전원주택·귀농귀촌·관광 개발축</li>
+            <li><b>위치</b>: 공주시 계룡면 일원</li>
+            <li><b>성격</b>: 공주시 최초의 ‘면 단위 종합개발계획’ 대상 지역</li>
+            <li><b>핵심 자원</b>: 계룡저수지, 양화저수지, 갑사, 자연·관광 자원</li>
+          </ul>
+          <h3>2. 개발 방향</h3>
+          <ul>
+            <li>관광·힐링·체험형 농촌 관광 기반 조성</li>
+            <li>전원주택지, 귀농·귀촌 정주여건 개선</li>
+            <li>농촌 경관·생활 인프라 정비</li>
+          </ul>
+          <h3>3. 상담 포인트</h3>
+          <ul>
+            <li>전·답·임야, 전원주택 부지, 귀촌형 토지 설명 시 핵심 근거 자료</li>
+            <li>“단순 시골이 아니라, 시에서 계획을 세워 키우는 지역”이라는 이미지를 전달</li>
+            <li>테스 공인중개사사무소 위치와 연결해, ‘지역 특화 토지 전문가’ 브랜딩에 적합</li>
+          </ul>
+        `
+      },
+      city_vision: {
+        id: 'city_vision',
+        category: 'plan',
+        type: 'vision',
+        name: '공주시 2030·2040 도시·비전계획',
+        coords: GONGJU_CENTER,
+        zoom: 11,
+        popup: '공주시 2030·2040 도시·비전계획',
+        html: `
+          <h2>공주시 2030·2040 도시·비전계획</h2>
+          <h3>1. 계획 개요</h3>
+          <ul>
+            <li><b>유형</b>: 도시 전체 상위 비전·기본계획</li>
+            <li><b>2030 공주시 비전계획</b>: 도시 전반의 중장기 발전 방향 제시</li>
+            <li><b>2040 도시기본계획</b>: 도시공간 구조, 용도지역, 교통·기반시설, 주택공급 계획 등 포함</li>
+            <li>생활권 재편, 도심재생, 공업지역 재배치, 교통축 강화 등이 논의</li>
+          </ul>
+          <h3>2. 의미</h3>
+          <ul>
+            <li>공주시가 2040년을 내다보고 도시 구조를 재정비하는 단계에 있다는 의미</li>
+            <li>어떤 권역이 주거, 산업, 관광 중심축으로 커질지 가늠할 수 있는 상위 기준</li>
+          </ul>
+          <h3>3. 상담 포인트</h3>
+          <ul>
+            <li>특정 토지·주택을 설명할 때, “현재 위치가 상위계획에서 어떤 역할로 설정되어 있는지”를 함께 설명</li>
+            <li>장기 보유 관점의 토지·전원주택 투자자에게 신뢰를 주는 자료</li>
+          </ul>
+        `
+      },
+
+      listing_field_1: {
+        id: 'listing_field_1',
+        category: 'listing',
+        type: 'listing_field',
+        name: '[전] 계룡면 ○○리 전원주택 후보지',
+        coords: [36.372, 127.16],
+        zoom: 15,
+        popup: '[전] 계룡면 ○○리 전원주택 후보지',
+        html: `
+          <h2>[전] 계룡면 ○○리 전원주택 후보지 (예시)</h2>
+          <ul>
+            <li><b>지목</b>: 전(밭)</li>
+            <li><b>위치</b>: 공주시 계룡면 ○○리 일원</li>
+            <li><b>면적</b>: 약 300평 (예시)</li>
+            <li><b>특징</b>: 도로 접함, 전망 양호, 전원주택지로 적합</li>
+          </ul>
+          <p style="font-size:12px;color:#666;">※ 실제 상담용으로 사용할 때는 이 내용을 실제 매물 정보로 수정하세요.</p>
+        `
+      },
+      listing_rice_1: {
+        id: 'listing_rice_1',
+        category: 'listing',
+        type: 'listing_rice',
+        name: '[답] 계룡면 ○○리 논 매물',
+        coords: [36.365, 127.148],
+        zoom: 15,
+        popup: '[답] 계룡면 ○○리 논 매물',
+        html: `
+          <h2>[답] 계룡면 ○○리 논 매물 (예시)</h2>
+          <ul>
+            <li><b>지목</b>: 답(논)</li>
+            <li><b>위치</b>: 공주시 계룡면 ○○리 일원</li>
+            <li><b>면적</b>: 약 500평 (예시)</li>
+            <li><b>특징</b>: 농업용, 일부 전원형 개발 가능성 검토</li>
+          </ul>
+          <p style="font-size:12px;color:#666;">※ 실제 매물 좌표와 설명으로 교체해서 사용하세요.</p>
+        `
+      },
+      listing_forest_1: {
+        id: 'listing_forest_1',
+        category: 'listing',
+        type: 'listing_forest',
+        name: '[임야] 계룡산 자락 힐링형 임야',
+        coords: [36.355, 127.17],
+        zoom: 14,
+        popup: '[임야] 계룡산 자락 힐링형 임야',
+        html: `
+          <h2>[임야] 계룡산 자락 힐링형 임야 (예시)</h2>
+          <ul>
+            <li><b>지목</b>: 임야</li>
+            <li><b>위치</b>: 계룡산 자락 인근 (예시)</li>
+            <li><b>면적</b>: 약 1,000평 (예시)</li>
+            <li><b>특징</b>: 조용한 숲, 힐링형·장기투자형으로 적합</li>
+          </ul>
+          <p style="font-size:12px;color:#666;">※ 실제 임야 매물 정보로 변경해 사용하세요.</p>
+        `
+      },
+      listing_countryhouse_1: {
+        id: 'listing_countryhouse_1',
+        category: 'listing',
+        type: 'listing_countryhouse',
+        name: '[전원주택] 계룡면 ○○리 단독주택',
+        coords: [36.378, 127.155],
+        zoom: 16,
+        popup: '[전원주택] 계룡면 ○○리 단독주택',
+        html: `
+          <h2>[전원주택] 계룡면 ○○리 단독주택 (예시)</h2>
+          <ul>
+            <li><b>용도</b>: 단독주택·전원주택</li>
+            <li><b>위치</b>: 공주시 계룡면 ○○리 조용한 마을</li>
+            <li><b>대지면적</b>: 약 120평 (예시)</li>
+            <li><b>특징</b>: 마을 인프라 인접, 세컨하우스·귀촌용 모두 적합</li>
+          </ul>
+          <p style="font-size:12px;color:#666;">※ 실제 전원주택 매물 정보로 교체해서 사용하세요.</p>
+        `
+      }
+    };
+
+    const markers = {};
+    const activeTypes = new Set([
+      'newtown',
+      'ic_hub',
+      'soc',
+      'rural_tour',
+      'vision',
+      'listing_field',
+      'listing_rice',
+      'listing_forest',
+      'listing_countryhouse'
+    ]);
+
+    Object.values(items).forEach(item => {
+      const marker = L.marker(item.coords).addTo(map);
+      marker.bindPopup(item.popup);
+      marker.on('click', () => {
+        showItem(item.id);
+      });
+      markers[item.id] = marker;
+    });
+
+    const detailsEl = document.getElementById('details');
+    const buttons = document.querySelectorAll('.project-btn');
+
+    function setActiveButton(id) {
+      buttons.forEach(btn => {
+        if (id && btn.dataset.id === id) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    function updateMarkersVisibility() {
+      Object.values(items).forEach(item => {
+        const marker = markers[item.id];
+        if (!marker) return;
+        if (activeTypes.has(item.type)) {
+          if (!map.hasLayer(marker)) marker.addTo(map);
+        } else {
+          if (map.hasLayer(marker)) map.removeLayer(marker);
+        }
+      });
+    }
+
+    function ensureTypeActive(type) {
+      if (!activeTypes.has(type)) {
+        activeTypes.add(type);
+        const checkbox = document.querySelector('.layers-box input[data-type="' + type + '"]');
+        if (checkbox) checkbox.checked = true;
+        updateMarkersVisibility();
+      }
+    }
+
+    function showItem(id) {
+      const item = items[id];
+      if (!item) return;
+
+      ensureTypeActive(item.type);
+
+      if (item.category === 'plan') {
+        setActiveButton(id);
+      } else {
+        setActiveButton(null);
+      }
+
+      map.setView(item.coords, item.zoom);
+      if (markers[id]) markers[id].openPopup();
+
+      detailsEl.innerHTML = item.html;
+    }
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        showItem(id);
+      });
+    });
+
+    const layerCheckboxes = document.querySelectorAll('.layers-box input[type="checkbox"]');
+    layerCheckboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        const type = cb.dataset.type;
+        if (!type) return;
+        if (cb.checked) activeTypes.add(type);
+        else activeTypes.delete(type);
+        updateMarkersVisibility();
+      });
+    });
+
+    const allOnBtn = document.getElementById('layers-all-on');
+    const allOffBtn = document.getElementById('layers-all-off');
+
+    allOnBtn.addEventListener('click', () => {
+      layerCheckboxes.forEach(cb => {
+        cb.checked = true;
+        const type = cb.dataset.type;
+        if (type) activeTypes.add(type);
+      });
+      updateMarkersVisibility();
+    });
+
+    allOffBtn.addEventListener('click', () => {
+      layerCheckboxes.forEach(cb => {
+        cb.checked = false;
+        const type = cb.dataset.type;
+        if (type && activeTypes.has(type)) activeTypes.delete(type);
+      });
+      updateMarkersVisibility();
+    });
+
+    updateMarkersVisibility();
+  </script>
+</body>
+</html>
