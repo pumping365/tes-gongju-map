@@ -686,23 +686,35 @@
       }
     }
 
-    function showItem(id) {
-      const item = items[id];
-      if (!item) return;
+   function showItem(id) {
+  const item = items[id];
+  if (!item) return;
 
-      ensureTypeActive(item.type);
+  // 1) 해당 레이어가 꺼져 있으면 자동으로 켜줌
+  ensureTypeActive(item.type);
 
-      if (item.category === 'plan') {
-        setActiveButton(id);
-      } else {
-        setActiveButton(null);
-      }
+  // 2) 개발계획 버튼 active 표시
+  if (item.category === 'plan') {
+    setActiveButton(id);
+  } else {
+    setActiveButton(null);
+  }
 
-      map.setView(item.coords, item.zoom);
-      if (markers[id]) markers[id].openPopup();
+  // 3) 지도 가운데로 이동 + 팝업 열기
+  map.setView(item.coords, item.zoom);
+  if (markers[id]) {
+    markers[id].openPopup();
+  }
 
-      detailsEl.innerHTML = item.html;
-    }
+  // 4) 오른쪽 상세영역 내용 바꾸기
+  detailsEl.innerHTML = item.html;
+
+  // 5) 상세영역이 화면에 바로 보이도록 스크롤
+  //    (특히 아래쪽에서 버튼 클릭했을 때 효과적)
+  detailsEl.scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest'
+  });
 
     buttons.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -748,3 +760,4 @@
 </body>
 
 </html>
+
