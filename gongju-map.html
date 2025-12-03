@@ -261,7 +261,30 @@
       <div class="hint">
         왼쪽 지도 / 아래 버튼을 클릭하면 개발계획·매물 위치와 설명이 표시됩니다. (상담용 화면)
       </div>
-
+      <div class="project-list">
+        <div class="project-list-title">[주요 개발계획 바로가기]</div>
+        <button class="project-btn" data-id="songseon_donghyeon">
+          <strong>송선·동현지구 도시개발사업</strong>
+          <span>세종 인접 신도시급 개발 (주거 중심)</span>
+        </button>
+        <button class="project-btn" data-id="geumheung">
+          <strong>금흥지구 도시개발사업</strong>
+          <span>공주IC 인접 신흥 주거·생활 거점</span>
+        </button>
+        <button class="project-btn" data-id="sin_gwan_center">
+          <strong>신관동 복합커뮤니티센터</strong>
+          <span>청소년·문화·체육·학습 복합 생활SOC</span>
+        </button>
+        <button class="project-btn" data-id="gyeryong">
+          <strong>계룡면 종합개발계획</strong>
+          <span>관광·힐링·전원주택·귀촌 특화 권역</span>
+        </button>
+        <button class="project-btn" data-id="city_vision">
+          <strong>공주시 2030·2040 도시·비전계획</strong>
+          <span>도시 전체 중장기 발전 방향</span>
+        </button>
+      </div>
+     
       <div class="layers-box">
         <div class="layers-header">
           <h2>레이어 관리 (개발계획 + 매물)</h2>
@@ -337,30 +360,9 @@
             <div class="layer-label-sub">단독·전원주택, 세컨하우스용</div>
           </div>
         </div>
-      </div>
+      
 
-      <div class="project-list">
-        <div class="project-list-title">[주요 개발계획 바로가기]</div>
-        <button class="project-btn" data-id="songseon_donghyeon">
-          <strong>송선·동현지구 도시개발사업</strong>
-          <span>세종 인접 신도시급 개발 (주거 중심)</span>
-        </button>
-        <button class="project-btn" data-id="geumheung">
-          <strong>금흥지구 도시개발사업</strong>
-          <span>공주IC 인접 신흥 주거·생활 거점</span>
-        </button>
-        <button class="project-btn" data-id="sin_gwan_center">
-          <strong>신관동 복합커뮤니티센터</strong>
-          <span>청소년·문화·체육·학습 복합 생활SOC</span>
-        </button>
-        <button class="project-btn" data-id="gyeryong">
-          <strong>계룡면 종합개발계획</strong>
-          <span>관광·힐링·전원주택·귀촌 특화 권역</span>
-        </button>
-        <button class="project-btn" data-id="city_vision">
-          <strong>공주시 2030·2040 도시·비전계획</strong>
-          <span>도시 전체 중장기 발전 방향</span>
-        </button>
+
       </div>
 
       <div id="details">
@@ -709,7 +711,7 @@
       // 우측 상세 영역이 항상 화면 안에 보이도록 스크롤
       detailsEl.scrollIntoView({
         behavior: 'smooth',
-        block: 'nearest'
+        block: 'start'
       });
     }
 
@@ -757,5 +759,6 @@
 </body>
 
 </html>
+
 
 
