@@ -645,7 +645,7 @@
 
     Object.values(items).forEach(item => {
       const marker = L.marker(item.coords).addTo(map);
-      marker.bindPopup(item.popup);
+      marker.bindPopup(item.html, { maxWidth: 480 });
       marker.on('click', () => {
         showItem(item.id);
       });
@@ -746,4 +746,5 @@
     updateMarkersVisibility();
   </script>
 </body>
+
 </html>
